@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <title>Rede Global de Fibra Óptica — Visualização Demonstrativa</title>
+
+  <!-- Leaflet Base -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Leaflet Geometry Util (para animação) -->
+  <script src="https://unpkg.com/leaflet-geometryutil"></script>
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #020312;
+      font-family: Arial, sans-serif;
+      color: white;
+      overflow: hidden;
+    }
+
+    #map {
+      height: 100%;
+      width: 100%;
+    }
+
+    /* Cabeçalho */
+    #header {
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(5, 8, 32, 0.92);
+      padding: 12px 25px;
+      border-radius: 14px;
+      box-shadow: 0 0 18px rgba(0, 255, 204, 0.35);
+      text-align: center;
+      z-index: 1000;
+    }
+
+    #header h1 {
+      color: #00ffe0;
+      margin: 0;
+      font-size: 18px;
+      text-transform: uppercase;
+    }
+
+    #header p {
+      margin: 5px 0 0;
+      font-size: 12px;
+      color: #c6f7ff;
+    }
+
+    /* Legenda */
+    #legend {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(5, 8, 32, 0.92);
+      padding: 12px 15px;
+      border-radius: 12px;
+      font-size: 12px;
+      box-shadow: 0 0 18px rgba(0, 255, 204, 0.35);
+      z-index: 1000;
+    }
+
+    .legend-line {
+      width: 28px;
+      height: 4px;
+      background: #00ffe0;
+      box-shadow: 0 0 10px #00ffe0;
+      border-radius: 10px;
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      background: #ffeb3b;
+      box-shadow: 0 0 10px #ffeb3b;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    /* Info rodapé */
+    #info {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: rgba(5, 8, 32, 0.92);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      box-shadow: 0 0 18px rgba(0, 255, 204, 0.35);
+      max-width: 280px;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="header">
+    <h1>REDE GLOBAL DE FIBRA ÓPTICA (SINTÉTICA)</h1>
+    <p>Visualização demonstrativa com traçado aproximado, baseada em informações públicas.</p>
+  </div>
+
+  <div id="map"></div>
+
+  <div id="legend">
+    <strong>Legenda</strong><br><br>
+    <span class="legend-line"></span> Cabos de fibra ótica<br>
+    <span class="legend-dot"></span> Pacotes de dados (simulação)
+  </div>
+
+  <div id="info">
+    Traçados aproximados, criados manualmente com base em países e portos de aterragem citados em fontes públicas.
+  </div>
+
+  <div id="info">
+  Traçados aproximados, criados manualmente com base em países e portos de aterragem citados em fontes públicas.
+  <br><br>
+  <strong>Elaborado por:</strong> Cyntia Molina
+  <br>
+  <a href="https://github.com/cymolina" target="_blank" style="color:#00ffe0;">github.com/cymolina</a>
+</div>
+
+<script>
+/* =====================================================
+   1) Mapa base com fundo escuro
+===================================================== */
+const map = L.map("map", {
+  zoomControl: true,
+  minZoom: 2,
+  maxZoom: 6
+}).setView([10, -30], 3);
+
+// Basemap escuro (CARTO Dark Matter)
+L.tileLayer(
+  "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+  {
+    subdomains: "abcd",
+    maxZoom: 6,
+    minZoom: 2,
+    attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+  }
+).addTo(map);
+
+/* =====================================================
+   2) Pontos de aterragem aproximados
+===================================================== */
+const pts = {
+  fortaleza: [-3.73, -38.52],
+  sines: [37.95, -8.87],
+  praia: [14.92, -23.51],
+  fernandoNoronha: [-3.84, -32.41],
+  sangano: [-9.36, 13.11],
+  virginiaBeach: [36.85, -75.98],
+  sopelana: [43.38, -3.01]
+};
+
+const cables = [
+  {
+    name: "EllaLink",
+    coords: [
+      pts.fortaleza,
+      [5, -30],
+      pts.praia,
+      [30, -20],
+      pts.sines
+    ]
+  },
+  {
+    name: "MAREA",
+    coords: [
+      pts.virginiaBeach,
+      [45, -40],
+      pts.sopelana
+    ]
+  },
+  {
+    name: "SACS",
+    coords: [
+      pts.sangano,
+      [0, -5],
+      pts.fernandoNoronha,
+      pts.fortaleza
+    ]
+  }
+];
+
+// desenhar cabos
+cables.forEach(cable => {
+  L.polyline(cable.coords, {
+    color: "#00ffe0",
+    weight: 4,
+    opacity: 0.9
+  }).addTo(map);
+});
+
+// desenhar pontos de aterragem
+Object.values(pts).forEach(coord => {
+  L.circleMarker(coord, {
+    radius: 6,
+    color: "#00ffe0",
+    fillColor: "#002a3f",
+    fillOpacity: 1,
+    weight: 2
+  }).addTo(map);
+});
+
+/* =====================================================
+   3) Função de animação
+===================================================== */
+function animateAlongLine(latlngs) {
+  const marker = L.circleMarker(latlngs[0], {
+    radius: 7,
+    color: "#ffeb3b",
+    weight: 2,
+    fillColor: "#fff176",
+    fillOpacity: 1
+  }).addTo(map);
+
+  let progress = 0;
+
+  function animate() {
+    progress += 0.0017; // velocidade
+    if (progress > 1) progress = 0;
+
+    const pt = L.GeometryUtil.interpolateOnLine(map, latlngs, progress);
+    if (pt && pt.latLng) {
+      marker.setLatLng(pt.latLng);
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+}
+
+// aplicar animação em cada cabo (1 pacote por cabo; dá pra aumentar)
+cables.forEach(cable => {
+  const latlngs = cable.coords.map(c => L.latLng(c[0], c[1]));
+  animateAlongLine(latlngs);
+});
+</script>
+
+</body>
+</html>
